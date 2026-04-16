@@ -12,6 +12,7 @@ export default function Login() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // 👈 NEW
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -26,6 +27,11 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // ✅ Simple validation
+    if (!form.email) return toast.error("Email is required");
+    if (!form.password) return toast.error("Password is required");
+
     setLoading(true);
 
     try {
@@ -43,17 +49,10 @@ export default function Login() {
         throw new Error(data.error || "Login failed");
       }
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      } else {
-        throw new Error("No token received");
-      }
-
+      localStorage.setItem("token", data.token);
       toast.success("Login successful");
 
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 300);
+      setTimeout(() => navigate("/dashboard"), 300);
 
     } catch (err) {
       toast.error(err.message || "Unable to login");
@@ -72,8 +71,46 @@ export default function Login() {
         </div>
 
         <form className="auth-form" onSubmit={handleLogin}>
-          <input name="email" value={form.email} onChange={handleChange} required />
-          <input name="password" value={form.password} onChange={handleChange} required />
+
+          {/* EMAIL */}
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+
+          {/* PASSWORD */}
+          <label>Password</label>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Enter your password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+
+            {/* 👁️ Toggle */}
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                fontSize: "14px",
+                color: "#aaa"
+              }}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </span>
+          </div>
 
           <button type="submit" disabled={loading}>
             {loading ? "Signing in..." : "Login"}
